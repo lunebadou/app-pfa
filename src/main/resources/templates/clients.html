@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clients - Finance ERP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .conteneur {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .entete {
+            background-color: #1d4ed8;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .entete h1 {
+            margin: 0 0 10px 0;
+        }
+
+        .retour {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: white;
+            background-color: #2563eb;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+
+        .retour:hover {
+            background-color: #1d4ed8;
+        }
+
+        .grille {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .bloc {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .erreur {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="conteneur">
+
+    <div class="entete">
+        <h1>Gestion des clients</h1>
+        <p>Consulter les clients et ajouter un nouveau client.</p>
+        <a class="retour" th:href="@{/dashboard}">Retour au dashboard</a>
+    </div>
+
+    <div class="grille">
+
+        <div class="bloc">
+            <h2>Liste des clients</h2>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="client : ${clients}">
+                    <td th:text="${client.id}">1</td>
+                    <td th:text="${client.nom}">Nom</td>
+                    <td th:text="${client.email}">email@test.com</td>
+                    <td th:text="${client.telephone}">0600000000</td>
+                    <td th:text="${client.adresse}">Casablanca</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bloc">
+            <h2>Ajouter un client</h2>
+
+            <form th:action="@{/clients}" th:object="${clientForm}" method="post">
+                <label for="nom">Nom du client</label>
+                <input id="nom" type="text" th:field="*{nom}">
+                <div class="erreur" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></div>
+
+                <label for="email">Email</label>
+                <input id="email" type="email" th:field="*{email}">
+                <div class="erreur" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+                <label for="telephone">Téléphone</label>
+                <input id="telephone" type="text" th:field="*{telephone}">
+                <div class="erreur" th:if="${#fields.hasErrors('telephone')}" th:errors="*{telephone}"></div>
+
+                <label for="adresse">Adresse</label>
+                <input id="adresse" type="text" th:field="*{adresse}">
+                <div class="erreur" th:if="${#fields.hasErrors('adresse')}" th:errors="*{adresse}"></div>
+
+                <button type="submit">Enregistrer</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

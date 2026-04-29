@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Trésorerie - Finance ERP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .conteneur {
+            width: 90%;
+            max-width: 1300px;
+            margin: 30px auto;
+        }
+
+        .entete {
+            background-color: #1d4ed8;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .entete h1 {
+            margin: 0 0 10px 0;
+        }
+
+        .retour {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: white;
+            background-color: #2563eb;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+
+        .retour:hover {
+            background-color: #1d4ed8;
+        }
+
+        .grille {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        .bloc {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .carte-synthese {
+            background-color: #10b981;
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .carte-synthese h3 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+
+        .carte-synthese .valeur {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .erreur {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="conteneur">
+
+    <div class="entete">
+        <h1>Gestion de la Trésorerie</h1>
+        <p>Enregistrer et suivre les paiements reçus des clients.</p>
+        <a class="retour" th:href="@{/dashboard}">Retour au dashboard</a>
+    </div>
+
+    <div class="carte-synthese">
+        <h3>Montant total encaissé</h3>
+        <div class="valeur" th:text="${totalEncaisse}">0.00</div>
+    </div>
+
+    <div class="grille">
+
+        <div class="bloc">
+            <h2>Liste des paiements</h2>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Facture</th>
+                    <th>Montant</th>
+                    <th>Mode de paiement</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="payment : ${payments}">
+                    <td th:text="${payment.id}">1</td>
+                    <td th:text="${payment.datePaiement}">2026-04-27</td>
+                    <td th:text="${payment.invoice.numero}">FAC-2026-001</td>
+                    <td th:text="${payment.montant}">1200.00</td>
+                    <td th:text="${payment.modePaiement}">Virement</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bloc">
+            <h2>Enregistrer un paiement</h2>
+
+            <form th:action="@{/treasury}" th:object="${paymentForm}" method="post">
+                <label for="datePaiement">Date de paiement</label>
+                <input id="datePaiement" type="date" th:field="*{datePaiement}">
+                <div class="erreur" th:if="${#fields.hasErrors('datePaiement')}" th:errors="*{datePaiement}"></div>
+
+                <label for="montant">Montant</label>
+                <input id="montant" type="number" step="0.01" th:field="*{montant}">
+                <div class="erreur" th:if="${#fields.hasErrors('montant')}" th:errors="*{montant}"></div>
+
+                <label for="modePaiement">Mode de paiement</label>
+                <select id="modePaiement" th:field="*{modePaiement}">
+                    <option value="">-- Choisir un mode --</option>
+                    <option value="Virement">Virement</option>
+                    <option value="Cheque">Chèque</option>
+                    <option value="Especes">Espèces</option>
+                    <option value="Carte">Carte bancaire</option>
+                </select>
+                <div class="erreur" th:if="${#fields.hasErrors('modePaiement')}" th:errors="*{modePaiement}"></div>
+
+                <label for="invoice">Facture</label>
+                <select id="invoice" th:field="*{invoice.id}">
+                    <option value="">-- Choisir une facture --</option>
+                    <option th:each="invoice : ${invoices}"
+                            th:value="${invoice.id}"
+                            th:text="${invoice.numero} + ' - ' + ${invoice.montantTtc} + ' DH'">
+                    </option>
+                </select>
+                <div class="erreur" th:if="${#fields.hasErrors('invoice.id')}" th:errors="*{invoice.id}"></div>
+
+                <button type="submit">Enregistrer le paiement</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
