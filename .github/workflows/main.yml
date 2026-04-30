@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
++name: Build and Push Docker Image
 
 on:
   push:
@@ -28,8 +28,3 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/app-pfa:latest
-
-      - name: Deploy to Ubuntu Server
-        run: |
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd app-pfa && docker compose pull && docker compose up -d"
