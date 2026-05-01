@@ -10,6 +10,8 @@ pipeline {
         
         stage('Build') {
             steps {
+                // Ajout des droits d'exécution sur le wrapper Maven
+                sh 'chmod +x mvnw'
                 sh './mvnw clean package -DskipTests'
             }
         }
