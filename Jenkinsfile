@@ -32,11 +32,12 @@ pipeline {
         }
         
         stage('Deploy') {
-            steps {
-                sh 'docker compose down || true'
+           steps {
+                sh 'docker compose down --remove-orphans || true'
+                sh 'docker rm -f postgres-finance app-pfa-container || true'
                 sh 'docker compose up -d'
             }
-        }
+}
     }
     
     post {
