@@ -15,7 +15,13 @@ pipeline {
                 sh './mvnw clean package -DskipTests'
             }
         }
-        
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=finance-erp -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+}
         stage('Docker Build') {
             steps {
                 sh 'docker build -t lunebadou/app-pfa:latest .'
