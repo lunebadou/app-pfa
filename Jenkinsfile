@@ -18,7 +18,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                    sh './mvnw sonar:sonar -Dsonar.projectKey=finance-erp -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$SONAR_TOKEN'
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=finance-erp -Dsonar.host.url=http://192.168.11.105:9000 -Dsonar.login=$SONAR_TOKEN'
                 }
             }
 }
