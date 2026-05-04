@@ -65,14 +65,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "========== DEPLOIEMENT SUR ${params.ENVIRONMENT.toUpperCase()} =========="
-                
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || true'
                 sh 'docker rm -f ${APP_CONTAINER_NAME} ${DB_CONTAINER_NAME} || true'
-                
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} up -d'
-                
                 sh 'sleep 10'
-                
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} ps'
             }
         }
@@ -98,6 +94,7 @@ pipeline {
                 }
             }
         }
+    }
     
     post {
         success {
