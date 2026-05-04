@@ -65,10 +65,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "========== DEPLOIEMENT SUR ${params.ENVIRONMENT.toUpperCase()} =========="
+                // Nettoyage et relance
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || true'
-                sh 'docker rm -f ${APP_CONTAINER_NAME} ${DB_CONTAINER_NAME} || true'
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} up -d'
-                sh 'sleep 10'
                 sh 'docker compose -f ${DOCKER_COMPOSE_FILE} ps'
             }
         }
@@ -78,19 +77,23 @@ pipeline {
                 echo "========== HEALTH CHECK =========="
                 script {
                     def port = params.ENVIRONMENT == 'prod' ? '9899' : '9898'
-                    sh """
-                        echo "Vérification de la santé de l'application sur le port ${port}..."
-                        for i in {1..30}; do
+                    // On définit le statut dans une variable pour gérer l'erreur proprement
+                    def healthStatus = sh(script: """
+                        echo "Vérification de l'application sur http://localhost:${port}/actuator/health"
+                        for i in \$(seq 1 30); do
                             if curl -s http://localhost:${port}/actuator/health | grep -q "UP"; then
-                                echo "✅ Application prête!"
+                                echo "✅ Application prête après \$((i*3)) secondes!"
                                 exit 0
                             fi
-                            echo "Attente de l'application... (\$i/30)"
-                            sleep 2
+                            echo "Attente du démarrage... (\$i/30)"
+                            sleep 3
                         done
-                        echo "❌ Application non répondante"
                         exit 1
-                    """
+                    """, returnStatus: true)
+
+                    if (healthStatus != 0) {
+                        error "❌ L'application n'a pas démarré à temps ou est instable."
+                    }
                 }
             }
         }
@@ -99,7 +102,6 @@ pipeline {
     post {
         success {
             echo "✅ Pipeline terminé avec succès!"
-            echo "Environnement: ${params.ENVIRONMENT}"
             script {
                 def port = params.ENVIRONMENT == 'prod' ? '9899' : '9898'
                 echo "Application accessible sur: http://localhost:${port}"
@@ -107,8 +109,8 @@ pipeline {
         }
         failure {
             echo "❌ Pipeline échoué!"
-            echo "Environnement: ${params.ENVIRONMENT}"
-            sh 'docker compose -f ${DOCKER_COMPOSE_FILE} logs || true'
+            // Affiche les logs du conteneur d'application pour comprendre le crash
+            sh 'docker compose -f ${DOCKER_COMPOSE_FILE} logs --tail=100 ${APP_CONTAINER_NAME} || true'
         }
         always {
             echo "Fin de l'exécution du pipeline"
