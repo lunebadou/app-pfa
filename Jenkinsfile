@@ -63,14 +63,32 @@ pipeline {
         }
         
         stage('Deploy') {
-            steps {
-                echo "========== DEPLOIEMENT SUR ${params.ENVIRONMENT.toUpperCase()} =========="
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} down --remove-orphans || true'
-                sh 'docker rm -f ${APP_CONTAINER_NAME} ${DB_CONTAINER_NAME} || true'
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} up -d'
-                sh 'sleep 10'
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} ps'
-            }
+    steps {
+        script {
+            // On prépare la variable en Groovy AVANT de l'envoyer au shell
+            def envName = params.ENVIRONMENT
+            def envUpper = envName.toUpperCase()
+            def composeFile = "docker-compose.${envName}.yml"
+            def projectName = "finance-${envName}"
+
+            echo "========== DEPLOIEMENT SUR ${envUpper} =========="
+
+            sh """
+                # On arrête et nettoie l'ancien projet
+                docker compose -f ${composeFile} -p ${projectName} down --remove-orphans || true
+                
+                # On force la suppression au cas où (optionnel si down fonctionne bien)
+                docker rm -f app-pfa-${envName} postgres-finance-${envName} 2>/dev/null || true
+                
+                # On relance proprement
+                docker compose -f ${composeFile} -p ${projectName} up -d --build
+                
+                # Attente et vérification
+                sleep 10
+                docker compose -f ${composeFile} -p ${projectName} ps
+            """
+        }
+    }
 }
         
         stage('Health Check') {
