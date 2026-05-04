@@ -82,23 +82,22 @@ pipeline {
                 echo "========== HEALTH CHECK =========="
                 script {
                     def port = params.ENVIRONMENT == 'prod' ? '9899' : '9898'
-                    sh '''
+                    sh """
                         echo "Vérification de la santé de l'application sur le port ${port}..."
                         for i in {1..30}; do
                             if curl -s http://localhost:${port}/actuator/health | grep -q "UP"; then
                                 echo "✅ Application prête!"
                                 exit 0
                             fi
-                            echo "Attente de l'application... ($i/30)"
+                            echo "Attente de l'application... (\$i/30)"
                             sleep 2
                         done
                         echo "❌ Application non répondante"
                         exit 1
-                    '''
+                    """
                 }
             }
         }
-    }
     
     post {
         success {
