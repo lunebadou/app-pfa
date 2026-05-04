@@ -65,12 +65,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "========== DEPLOIEMENT SUR ${params.ENVIRONMENT.toUpperCase()} =========="
-                // Nettoyage et relance
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || true'
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} up -d'
-                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} ps'
+                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} down --remove-orphans || true'
+                sh 'docker rm -f ${APP_CONTAINER_NAME} ${DB_CONTAINER_NAME} || true'
+                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} up -d'
+                sh 'sleep 10'
+                sh 'docker compose -f ${DOCKER_COMPOSE_FILE} -p finance-${params.ENVIRONMENT} ps'
             }
-        }
+}
         
         stage('Health Check') {
             steps {
