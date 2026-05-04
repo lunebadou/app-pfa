@@ -1,0 +1,44 @@
+services:
+  postgres-finance-prod:
+    image: postgres:16
+    container_name: postgres-finance-prod
+    environment:
+      POSTGRES_DB: finance_erp_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: fardoujamiou
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_finance_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finance_erp_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finance-prod-network
+
+  app-pfa-prod:
+    image: lunebadou/app-pfa:latest
+    container_name: app-pfa-prod
+    depends_on:
+      postgres-finance-prod:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-finance-prod:5432/finance_erp_prod
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: fardoujamiou
+      SERVER_PORT: 9899
+    ports:
+      - "9899:9899"
+    networks:
+      - finance-prod-network
+    restart: unless-stopped
+
+volumes:
+  postgres_finance_prod_data:
+
+networks:
+  finance-prod-network:
+    driver: bridge
